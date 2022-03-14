@@ -22,8 +22,9 @@ task test_custom ( type: Test, dependsOn: buildcustom) {
 }
 
 
-task hello (type: JavaExec, dependsOn: testcustom) {
-    	println("Hello WORLD!")
+task hello (dependsOn: test_custom) {
+	doLast{
+		println "Hello WORLD!"
 }
 
 repositories { 
