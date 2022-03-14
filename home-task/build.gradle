@@ -9,3 +9,22 @@ task buildcustom ( type: Jar) {
           'Implementation-Version': version,
           'Main-Class': 'com.test.Project'
     }
+    baseName = "hw3-app"
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+task testcustom ( type: Test, dependsOn: buildcustom) {
+        useJUnit()
+        testLogging {
+        events "started", "passed", "skipped", "failed"
+    }
+}
+
+
+task hello (type: JavaExec, dependsOn: testcustom) {
+    group = "Execution"
+    description = "Run the main class with JavaExecTask"
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'com.test.Project'
+}
