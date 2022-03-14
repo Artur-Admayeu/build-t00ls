@@ -25,6 +25,7 @@ task test_custom ( type: Test, dependsOn: build_custom) {
 task hello (dependsOn: test_custom) {
 	doLast{
 		println "Hello WORLD!"
+		}
 }
 
 repositories { 
