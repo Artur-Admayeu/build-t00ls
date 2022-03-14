@@ -1,0 +1,11 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+version = '1.0'
+
+task buildcustom ( type: Jar) {
+  manifest {
+        attributes 'Implementation-Title': 'Gradle Jar File Example',  
+          'Implementation-Version': version,
+          'Main-Class': 'com.test.Project'
+    }
