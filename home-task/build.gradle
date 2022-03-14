@@ -42,3 +42,4 @@ dependencies {
     compile group: 'org.apache.logging.log4j', name: 'log4j-1.2-api', version: '2.4.1'
     testImplementation "junit:junit:4.12"
 }
+
