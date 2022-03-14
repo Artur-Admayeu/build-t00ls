@@ -3,7 +3,7 @@ apply plugin: 'eclipse'
 
 version = '1.0'
 
-task buildcustom ( type: Jar) {
+task build_custom ( type: Jar) {
   manifest {
         attributes 'Implementation-Title': 'Gradle Jar File Example',  
           'Implementation-Version': version,
@@ -14,19 +14,16 @@ task buildcustom ( type: Jar) {
     with jar
 }
 
-task testcustom ( type: Test, dependsOn: buildcustom) {
+task test_custom ( type: Test, dependsOn: buildcustom) {
         useJUnit()
         testLogging {
-        events "started", "passed", "skipped", "failed"
+        events "passed", "failed"
     }
 }
 
 
 task hello (type: JavaExec, dependsOn: testcustom) {
-    group = "Execution"
-    description = "Run the main class with JavaExecTask"
-    classpath = sourceSets.main.runtimeClasspath
-    main = 'com.test.Project'
+    	println("Hello WORLD!")
 }
 
 repositories { 
