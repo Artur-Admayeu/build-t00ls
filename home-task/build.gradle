@@ -14,7 +14,7 @@ task build_custom ( type: Jar) {
     with jar
 }
 
-task test_custom ( type: Test, dependsOn: buildcustom) {
+task test_custom ( type: Test, dependsOn: build_custom) {
         useJUnit()
         testLogging {
         events "passed", "failed"
