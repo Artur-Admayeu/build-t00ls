@@ -38,7 +38,7 @@
 
     <properties>
         <!-- Remote Server URL -->
-        <remote.server.url>http://172.29.171.157:8090/</remote.server.url>
+        <remote.server.url>http://localhost:8080/</remote.server.url>
     </properties>
 
     <dependencies>
