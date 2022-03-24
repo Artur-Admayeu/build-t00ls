@@ -1,0 +1,64 @@
+pipeline {
+    options { timestamps() }
+    agent any
+    environment {
+        imageName = 'helloworld-aadmayeu'
+        registryCredentials = "DockerToNexus"
+        registry = "172.17.0.1:8082"
+        dockerImage = ''
+    }
+    tools { 
+        maven 'maven' 
+    }
+    stages {
+        stage('Connect to Git')  {
+            steps {
+                git branch: 'aadmayeu-hw7',
+                    url: 'https://github.com/Artur-Admayeu/build-t00ls.git'
+            }
+        }
+        
+        stage('Package') {
+            steps {
+                dir('helloworld-project/helloworld-ws/') {
+                  sh 'mvn package -DskipTests'
+                }
+            }
+        }
+        stage('Test') { 
+            steps {
+                dir('helloworld-project/helloworld-ws/') {
+                    sh 'mvn test' 
+                }
+            }
+        }
+
+        stage('Build image') {
+          steps{
+              dir('helloworld-project/helloworld-ws/') {
+                script {
+                  dockerImage = docker.build imageName
+                }
+              }
+          }
+        }
+        
+        stage('Sending to Nexus') {
+         steps{  
+             script {
+                 docker.withRegistry( 'http://'+registry, registryCredentials ) {
+                 dockerImage.push("rc-${env.BUILD_NUMBER}")
+              }
+            }
+          }
+        }
+        stage('Saving data') {
+         steps{  
+             sh'''
+              echo ${BUILD_NUMBER} > file.txt
+              '''
+             archiveArtifacts artifacts: 'file.txt', followSymlinks: false
+         }
+        }
+    }
+}

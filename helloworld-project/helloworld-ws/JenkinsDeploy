@@ -1,0 +1,40 @@
+pipeline {
+    options {timestamps()}
+    agent any
+    environment {
+        registry = "172.17.0.1:8082"
+    }
+    stages {
+        stage('Check for runing container') {
+         steps {
+            copyArtifacts filter: 'save.txt', fingerprintArtifacts: true, projectName: 'BuildPipe'
+            sh'''#!/bin/bash
+            last="$(cat file.txt)"
+            prev=$(($last-1)) 
+            docker login -u jenkins -p jenkinsuser01 172.17.0.1:8082
+            if [[ $(docker ps -f name=helloworld-app-$prev | sed '1d') ]]; then docker stop helloworld-app-$prev; else echo 'no container'; fi
+            '''
+         }
+        }
+        stage('Run new container') {
+         steps {
+            sh '''#!/bin/bash
+            last="$(cat file.txt)"
+            prev=$(($last-1)) 
+            docker run -d -p 8090:8080 --name helloworld-app-$last 172.17.0.1:8082/helloworld-aadmayeu:rc-$last
+            sleep 30
+            '''
+         }
+        }
+        stage('Health check') {
+         steps {
+            sh '''#!/bin/bash
+            last="$(cat file.txt)"
+            prev=$(($last-1)) 
+            curl -o /dev/null --silent --head --write-out '%{http_code}\n' 172.17.0.1:8090 > call.txt; 
+            if [[ $(cat call.txt) == "200" ]]; then docker rm helloworld-app-$prev || echo 'no container'; else docker rm -f helloworld-app-$last && docker start helloworld-app-$prev; fi
+            '''
+         }
+        }
+    }
+}
