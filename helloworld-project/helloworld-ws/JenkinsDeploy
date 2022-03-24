@@ -7,7 +7,7 @@ pipeline {
     stages {
         stage('Check for runing container') {
          steps {
-            copyArtifacts filter: 'file.txt', fingerprintArtifacts: true, projectName: 'BuildPipe'
+            copyArtifacts filter: 'file.txt', fingerprintArtifacts: true, projectName: 'HW8'
             sh'''#!/bin/bash
             last="$(cat file.txt)"
             prev=$(($last-1)) 
