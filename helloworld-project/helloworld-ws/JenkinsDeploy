@@ -18,7 +18,7 @@ pipeline {
         }
         stage('Run new container') {
          steps {
-            sh '''#!/bin/bash
+            sh'''#!/bin/bash
             last="$(cat file.txt)"
             prev=$(($last-1)) 
             docker run -d -p 8090:8080 --name helloworld-app-$last 172.17.0.1:8082/helloworld-aadmayeu:rc-$last
@@ -28,7 +28,7 @@ pipeline {
         }
         stage('Health check') {
          steps {
-            sh '''#!/bin/bash
+            sh'''#!/bin/bash
             last="$(cat file.txt)"
             prev=$(($last-1)) 
             curl -o /dev/null --silent --head --write-out '%{http_code}\n' 172.17.0.1:8090 > call.txt; 
