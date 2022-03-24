@@ -3,7 +3,7 @@ pipeline {
     agent any
     environment {
         imageName = 'helloworld-aadmayeu'
-        registryCredentials = "DockerToNexus"
+        registryCredentials = "jenkins"
         registry = "172.17.0.1:8082"
         dockerImage = ''
     }
