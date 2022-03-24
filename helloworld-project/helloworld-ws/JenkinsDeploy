@@ -11,7 +11,7 @@ pipeline {
             sh'''#!/bin/bash
             last="$(cat file.txt)"
             prev=$(($last-1)) 
-            docker login -u jenkins -p jenkinsuser01 172.17.0.1:8082
+            docker login -u jenkins -p jenkins 172.17.0.1:8082
             if [[ $(docker ps -f name=helloworld-app-$prev | sed '1d') ]]; then docker stop helloworld-app-$prev; else echo 'no container'; fi
             '''
          }
