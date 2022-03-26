@@ -10,7 +10,7 @@ pipeline {
     }
     
     tools { 
-        maven 'maven3' 
+        maven 'maven' 
     }
     
     stages {
@@ -19,7 +19,7 @@ pipeline {
             script {
             try {
                 cleanWs()
-                git branch: 'aadmayeu_ft',
+                git branch: 'aadmayeu-ft',
                     url: 'https://github.com/Artur-Admayeu/build-t00ls.git'
             } catch (err) {
                 post {
