@@ -1,0 +1,240 @@
+pipeline {
+    options { timestamps() }
+    agent any
+    environment {
+        imageName = 'helloworld-aadmayeu'
+        registryCredentials = "jenkins"
+        sonarCredentials = "sonar-ft"
+        registry = "172.18.0.3:8082"
+        dockerImage = ''
+    }
+    
+    tools { 
+        maven 'maven3' 
+    }
+    
+    stages {
+        stage('Preparation')  {
+            steps{
+            script {
+            try {
+                cleanWs()
+                git branch: 'aadmayeu_ft',
+                    url: 'https://github.com/Artur-Admayeu/build-t00ls.git'
+            } catch (err) {
+                post {
+                    always {
+                        emailext body: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}: Check console output at ${env.BUILD_URL} to view the results.', recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}!'
+                    }
+                }   
+            }
+            }
+            }
+        }
+        
+        stage('Building code') {
+            steps{
+            script {
+            try {
+                dir('helloworld-project/helloworld-ws/') {
+                    sh 'mvn package -DskipTests'
+                }
+            } catch (err) {
+                post {
+                    always {
+                        emailext body: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}: Check console output at ${env.BUILD_URL} to view the results.', recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}!'
+                    }
+                }
+            }
+            }
+            }
+        }
+        
+        stage ('Sonar scan') {
+            steps{
+            script {
+            try {
+                echo "starting codeAnalyze with SonarQube......"
+                withSonarQubeEnv('sonarqube-9.3') {
+                    sh "/var/jenkins_home/tools/hudson.plugins.sonar.SonarRunnerInstallation/Sonar/bin/sonar-scanner -Dsonar.host.url=http://172.18.0.6:9000  -Dsonar.projectKey=Final-task-Admayeu -Dsonar.projectName=Final-task-Admayeu -Dsonar.language=java -Dsonar.qualitygate.wait=true -Dsonar.projectVersion=1.0 -Dsonar.java.binaries=helloworld-project/helloworld-ws/target -Dsonar.sources=helloworld-project/helloworld-ws/src/main/ -Dsonar.tests=helloworld-project/helloworld-ws/src/test/ "
+                }
+            } catch (err) {
+                post {
+                    always {
+                        emailext body: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}: Check console output at ${env.BUILD_URL} to view the results.', recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}!'
+                    }
+                }
+            }
+            }
+            }
+        }
+        
+        stage('Testing application') { 
+            parallel {
+                stage('pre-integration-test') {
+                    steps{
+                    script {
+                    try {
+                        dir('helloworld-project/helloworld-ws/') {
+                            sh 'mvn pre-integration-test' 
+                        }
+                    } catch (err) {
+                        post {
+                            always {
+                                emailext body: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}: Check console output at ${env.BUILD_URL} to view the results.', recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}!'
+                            }
+                        }
+                    }
+                    }
+                    }
+                }
+                stage('integration-test') {
+                    steps{
+                    script {
+                    try {
+                        dir('helloworld-project/helloworld-ws/') {
+                            sh 'echo mvn integration-test' 
+                        }
+                    } catch (err) {
+                        post {
+                            always {
+                                emailext body: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}: Check console output at ${env.BUILD_URL} to view the results.', recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}!'
+                            }
+                        }
+                    }
+                    }
+                    }
+                }
+                stage('post-integration-test') {
+                    steps{
+                    script {
+                    try {
+                        dir('helloworld-project/helloworld-ws/') {
+                            sh ' echo mvn post-integration-test' 
+                        }
+                    } catch (err) {
+                        post {
+                            always {
+                                emailext body: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}: Check console output at ${env.BUILD_URL} to view the results.', recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}!'
+                            }
+                        }
+                    }
+                    }
+                    }
+                }
+            }
+        }
+        
+        stage('Triggering job and fetching artefact after finishing') {
+            steps{
+            script {
+            try {
+                build(job: 'MNTLAB-aadmayeu-child1-build-job', parameters: [[$class: 'GitParameterValue', name: 'BRANCH_NAME', value: 'origin/vpayuta_maven']], propagate: true, wait: true)
+                copyArtifacts filter: 'home-task/target/*.log', fingerprintArtifacts: true, projectName: 'MNTLAB-aadmayeu-child1-build-job'
+            } catch (err) {
+                post {
+                    always {
+                        emailext body: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}: Check console output at ${env.BUILD_URL} to view the results.', recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}!'
+                    }
+                }
+            }
+            }
+            }
+        }
+        
+        stage('Packaging and Publishing results') { 
+            parallel {
+                stage('Archiving artifact') {
+                    steps{
+                    script {
+                    try {
+                         sh "gzip -c  home-task/target/*.log helloworld-project/helloworld-ws/target/helloworld-ws.war helloworld-project/helloworld-ws/Jenkinsfile > pipeline-aadmayeu-${env.BUILD_NUMBER}.gz"
+                         nexusArtifactUploader(
+                            nexusVersion: "nexus3",
+                            protocol: "http",
+                            nexusUrl: "172.18.0.4:8081",
+                            groupId: "ft",
+                            version: "${env.BUILD_NUMBER}",
+                            repository: "final-task-j",
+                            credentialsId: registryCredentials,
+                            artifacts: [
+                                [artifactId: "pipeline-aadmayeu",
+                                classifier: '',
+                                file: "pipeline-aadmayeu-${env.BUILD_NUMBER}.gz",
+                                type: 'gz']
+                            ]
+                        );
+                    } catch (err) {
+                        post {
+                            always {
+                                emailext body: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}: Check console output at ${env.BUILD_URL} to view the results.', recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}!'
+                            }
+                        }
+                    }
+                    }
+                    }
+                }
+                stage('Creating Docker Image') {
+                    steps{
+                    script {
+                    try {
+                        dir('helloworld-project/helloworld-ws/') {
+                            script {
+                                dockerImage = docker.build imageName
+                            }
+                        }
+                        script {
+                            docker.withRegistry( 'http://'+registry, registryCredentials ) {
+                                dockerImage.push("${env.BUILD_NUMBER}")
+                            }
+                        }
+                    } catch (err) {
+                        post {
+                            always {
+                                emailext body: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}: Check console output at ${env.BUILD_URL} to view the results.', recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}!'
+                            }
+                        }
+                    }
+                    }
+                    }
+                }
+            }
+        }
+        
+        stage('Asking for manual approval') {
+            steps {
+                script {
+                    timeout(time:30, unit:'SECONDS') {
+                        env.APPROVE_PROD = input message: 'Deploy to Production', ok: 'Continue'
+                    }
+                }
+            }
+        }
+        
+        stage('Deployment') {
+            steps{
+            script {
+            try {
+                script {
+                    withKubeConfig([credentialsId: 'minikubeconfig', serverUrl: "https://172.18.0.2:8443", namespace: "aadmayeu"]) {
+                        sh "sed -i -e 's,<IMAGE>,172.18.0.3:8082/helloworld-aadmayeu:${env.BUILD_NUMBER},g' ./helloworld-project/helloworld-ws/Deploy.yml"
+                        sh "kubectl apply -f ./helloworld-project/helloworld-ws/Deploy.yml "
+                    }
+                }
+            } catch (err) {
+                post {
+                    always {
+                        emailext body: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}: Check console output at ${env.BUILD_URL} to view the results.', recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}!'
+                    }
+                }
+            }
+            }
+            }
+            post {
+                always {
+                    emailext body: 'Success ${env.JOB_NAME} pipeline ${env.JOB_URL}', recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}!'
+                }
+            }    
+        }    
+    }
+}
