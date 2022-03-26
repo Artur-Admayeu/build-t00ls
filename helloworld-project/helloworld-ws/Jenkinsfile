@@ -5,7 +5,7 @@ pipeline {
         imageName = 'helloworld-aadmayeu'
         registryCredentials = "jenkins"
         sonarCredentials = "sonar-ft"
-        registry = "172.18.0.3:8082"
+        registry = "172.18.0.4:8082"
         dockerImage = ''
     }
     
@@ -55,8 +55,8 @@ pipeline {
             script {
             try {
                 echo "starting codeAnalyze with SonarQube......"
-                withSonarQubeEnv('sonarqube-9.3') {
-                    sh "/var/jenkins_home/tools/hudson.plugins.sonar.SonarRunnerInstallation/Sonar/bin/sonar-scanner -Dsonar.host.url=http://172.18.0.6:9000  -Dsonar.projectKey=Final-task-Admayeu -Dsonar.projectName=Final-task-Admayeu -Dsonar.language=java -Dsonar.qualitygate.wait=true -Dsonar.projectVersion=1.0 -Dsonar.java.binaries=helloworld-project/helloworld-ws/target -Dsonar.sources=helloworld-project/helloworld-ws/src/main/ -Dsonar.tests=helloworld-project/helloworld-ws/src/test/ "
+                withSonarQubeEnv('Sonar') {
+                    sh "/var/jenkins_home/tools/hudson.plugins.sonar.SonarRunnerInstallation/Sonar/bin/sonar-scanner -Dsonar.host.url=http://172.18.0.6:9000  -Dsonar.projectKey=Final-task-Admayeu -Dsonar.projectName=Final-task-Admayeu -Dsonar.language=java -Dsonar.qualitygate.wait=true -Dsonar.projectVersion=1.0 -Dsonar.java.binaries=helloworld-project/helloworld-ws/target -Dsonar.sources=helloworld-project/helloworld-ws/src/main/ -Dsonar.tests=helloworld-project/helloworld-ws/src/test/ -Dsonar.login=861cae09623b4d54d1cfdc871d494ab5947901f7"
                 }
             } catch (err) {
                 post {
@@ -216,8 +216,8 @@ pipeline {
             script {
             try {
                 script {
-                    withKubeConfig([credentialsId: 'minikubeconfig', serverUrl: "https://172.18.0.2:8443", namespace: "aadmayeu"]) {
-                        sh "sed -i -e 's,<IMAGE>,172.18.0.3:8082/helloworld-aadmayeu:${env.BUILD_NUMBER},g' ./helloworld-project/helloworld-ws/Deploy.yml"
+                    withKubeConfig([credentialsId: 'finaltask', serverUrl: "https://172.18.0.2:8443", namespace: "aadmayeu"]) {
+                        sh "sed -i -e 's,<IMAGE>,172.18.0.4:8082/helloworld-aadmayeu:${env.BUILD_NUMBER},g' ./helloworld-project/helloworld-ws/Deploy.yml"
                         sh "kubectl apply -f ./helloworld-project/helloworld-ws/Deploy.yml "
                     }
                 }
