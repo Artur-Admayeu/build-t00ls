@@ -17,56 +17,47 @@ pipeline {
         stage('Preparation')  {
             steps{
             script {
-            try {
                 cleanWs()
                 git branch: 'aadmayeu-ft',
                     url: 'https://github.com/Artur-Admayeu/build-t00ls.git'
-            } catch (err) {
-                post {
-                    always {
-                        emailext body: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}: Check console output at ${env.BUILD_URL} to view the results.', recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}!'
+               }
+            }
+            post {
+                unsuccessful {
+                    emailext body: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - FAILED: Check console output at ${env.BUILD_URL} to view the results.", attachLog: true ,recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - FAILED!"
+                        }
                     }
-                }   
-            }
-            }
-            }
         }
         
         stage('Building code') {
             steps{
             script {
-            try {
                 dir('helloworld-project/helloworld-ws/') {
                     sh 'mvn package -DskipTests'
                 }
-            } catch (err) {
-                post {
-                    always {
-                        emailext body: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}: Check console output at ${env.BUILD_URL} to view the results.', recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}!'
+            }
+            }
+            post {
+                unsuccessful {
+                    emailext body: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - FAILED: Check console output at ${env.BUILD_URL} to view the results.", attachLog: true ,recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - FAILED!"
+                        }
                     }
-                }
             }
-            }
-            }
-        }
         
         stage ('Sonar scan') {
             steps{
             script {
-            try {
                 echo "starting codeAnalyze with SonarQube......"
                 withSonarQubeEnv('Sonar') {
                     sh "/var/jenkins_home/tools/hudson.plugins.sonar.SonarRunnerInstallation/Sonar/bin/sonar-scanner -Dsonar.host.url=http://172.18.0.6:9000  -Dsonar.projectKey=Final-task-Admayeu -Dsonar.projectName=Final-task-Admayeu -Dsonar.language=java -Dsonar.qualitygate.wait=true -Dsonar.projectVersion=1.0 -Dsonar.java.binaries=helloworld-project/helloworld-ws/target -Dsonar.sources=helloworld-project/helloworld-ws/src/main/ -Dsonar.tests=helloworld-project/helloworld-ws/src/test/ -Dsonar.login=861cae09623b4d54d1cfdc871d494ab5947901f7"
                 }
-            } catch (err) {
+            }
+            }
                 post {
-                    always {
-                        emailext body: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}: Check console output at ${env.BUILD_URL} to view the results.', recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}!'
+                        unsuccessful {
+                            emailext body: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - FAILED: Check console output at ${env.BUILD_URL} to view the results.", attachLog: true ,recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - FAILED!"
+                        }
                     }
-                }
-            }
-            }
-            }
         }
         
         stage('Testing application') { 
@@ -74,52 +65,43 @@ pipeline {
                 stage('pre-integration-test') {
                     steps{
                     script {
-                    try {
                         dir('helloworld-project/helloworld-ws/') {
                             sh 'mvn pre-integration-test' 
                         }
-                    } catch (err) {
-                        post {
-                            always {
-                                emailext body: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}: Check console output at ${env.BUILD_URL} to view the results.', recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}!'
-                            }
+                    }
+                    }
+                    post {
+                        unsuccessful {
+                            emailext body: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - FAILED: Check console output at ${env.BUILD_URL} to view the results.", attachLog: true ,recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - FAILED!"
                         }
-                    }
-                    }
                     }
                 }
                 stage('integration-test') {
                     steps{
                     script {
-                    try {
                         dir('helloworld-project/helloworld-ws/') {
                             sh 'echo mvn integration-test' 
                         }
-                    } catch (err) {
-                        post {
-                            always {
-                                emailext body: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}: Check console output at ${env.BUILD_URL} to view the results.', recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}!'
-                            }
+                    }
+                    }
+                    post {
+                        unsuccessful {
+                            emailext body: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - FAILED: Check console output at ${env.BUILD_URL} to view the results.", attachLog: true ,recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - FAILED!"
                         }
-                    }
-                    }
                     }
                 }
                 stage('post-integration-test') {
                     steps{
                     script {
-                    try {
                         dir('helloworld-project/helloworld-ws/') {
                             sh ' echo mvn post-integration-test' 
                         }
-                    } catch (err) {
-                        post {
-                            always {
-                                emailext body: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}: Check console output at ${env.BUILD_URL} to view the results.', recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}!'
-                            }
+                    }
+                    }
+                    post {
+                        unsuccessful {
+                            emailext body: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - FAILED: Check console output at ${env.BUILD_URL} to view the results.", attachLog: true ,recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - FAILED!"
                         }
-                    }
-                    }
                     }
                 }
             }
@@ -128,26 +110,22 @@ pipeline {
         stage('Triggering job and fetching artefact after finishing') {
             steps{
             script {
-            try {
                 build(job: 'MNTLAB-aadmayeu-child1-build-job', parameters: [[$class: 'GitParameterValue', name: 'BRANCH_NAME', value: 'origin/vpayuta_maven']], propagate: true, wait: true)
                 copyArtifacts filter: 'home-task/target/*.log', fingerprintArtifacts: true, projectName: 'MNTLAB-aadmayeu-child1-build-job'
-            } catch (err) {
-                post {
-                    always {
-                        emailext body: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}: Check console output at ${env.BUILD_URL} to view the results.', recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}!'
+            }
+            }
+            post {
+                unsuccessful {
+                         emailext body: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - FAILED: Check console output at ${env.BUILD_URL} to view the results.", attachLog: true ,recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - FAILED!"
+                        }
                     }
-                }
-            }
-            }
-            }
         }
         
-        stage('Packaging and Publishing results') { 
+        stage('Archiving,creation image and send to Nexus') { 
             parallel {
-                stage('Archiving artifact') {
+                stage('Archiving') {
                     steps{
                     script {
-                    try {
                          sh "gzip -c  home-task/target/*.log helloworld-project/helloworld-ws/target/helloworld-ws.war helloworld-project/helloworld-ws/Jenkinsfile > pipeline-aadmayeu-${env.BUILD_NUMBER}.gz"
                          nexusArtifactUploader(
                             nexusVersion: "nexus3",
@@ -164,20 +142,17 @@ pipeline {
                                 type: 'gz']
                             ]
                         );
-                    } catch (err) {
-                        post {
-                            always {
-                                emailext body: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}: Check console output at ${env.BUILD_URL} to view the results.', recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}!'
-                            }
+                    }
+                    }
+                    post {
+                        unsuccessful {
+                            emailext body: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - FAILED: Check console output at ${env.BUILD_URL} to view the results.", attachLog: true ,recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - FAILED!"
                         }
                     }
-                    }
-                    }
                 }
-                stage('Creating Docker Image') {
+                stage('Creation Image') {
                     steps{
                     script {
-                    try {
                         dir('helloworld-project/helloworld-ws/') {
                             script {
                                 dockerImage = docker.build imageName
@@ -188,14 +163,12 @@ pipeline {
                                 dockerImage.push("${env.BUILD_NUMBER}")
                             }
                         }
-                    } catch (err) {
-                        post {
-                            always {
-                                emailext body: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}: Check console output at ${env.BUILD_URL} to view the results.', recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}!'
-                            }
+                    }
+                    }
+                    post {
+                        unsuccessful {
+                            emailext body: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - FAILED: Check console output at ${env.BUILD_URL} to view the results.", attachLog: true ,recipientProviders: [[$class: 'BuildUserRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - FAILED!"
                         }
-                    }
-                    }
                     }
                 }
             }
@@ -213,28 +186,38 @@ pipeline {
         
         stage('Deployment') {
             steps{
-            script {
-            try {
                 script {
                     withKubeConfig([credentialsId: 'finaltask', serverUrl: "https://172.18.0.2:8443", namespace: "aadmayeu"]) {
                         sh "sed -i -e 's,<IMAGE>,172.18.0.4:8082/helloworld-aadmayeu:${env.BUILD_NUMBER},g' ./helloworld-project/helloworld-ws/Deploy.yml"
                         sh "kubectl apply -f ./helloworld-project/helloworld-ws/Deploy.yml "
                     }
                 }
-            } catch (err) {
-                post {
-                    always {
-                        emailext body: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}: Check console output at ${env.BUILD_URL} to view the results.', recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}!'
+                script {
+                   sh '''#!/bin/bash
+                   sleep 60
+                   curl -o /dev/null --silent --head --write-out '%{http_code}\n' 172.18.0.2:30333 > callout.txt; 
+                   '''
                     }
+                    script {
+                       
+                    withKubeConfig([credentialsId: 'finaltask', serverUrl: "https://172.18.0.2:8443", namespace: "aadmayeu"]) {
+                        sh '''#!/bin/bash
+                        if [[ $(cat callout.txt) != "200" ]]; then echo 'Rollback dont need';
+                        else listreplica="$(kubectl describe pods  -n aadmayeu  | grep 'ReplicaSet')" && kubectl rollout  undo deployment/hello-app-deploy -n aadmayeu && kubectl delete rs $(echo ${listreplica:27}) -n aadmayeu ; fi
+                        '''
+                    }
+                    
+                        }
                 }
-            }
-            }
-            }
+            
             post {
-                always {
-                    emailext body: 'Success ${env.JOB_NAME} pipeline ${env.JOB_URL}', recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: '${env.PROJECT_NAME} - Build # ${env.BUILD_NUMBER} - ${env.BUILD_STATUS}!'
+                unsuccessful {
+                    emailext body: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - FAILED: Check console output at ${env.BUILD_URL} to view the results.", attachLog: true ,recipientProviders: [[$class: 'BuildUserRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - FAILED!"
+                    }
+                success {
+                    emailext body: "Success ${env.JOB_NAME} pipeline ${env.JOB_URL}", recipientProviders: [[$class: 'BuildUserRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} ${env.BUILD_STATUS}!"
                 }
-            }    
-        }    
+            }
+        }
     }
 }
